@@ -136,8 +136,17 @@ jobs:
             frontend/coverage/**
 
   installer:
-    runs-on: ubuntu-latest
+    name: Installer (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     needs: [check]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            run_smoke_tests: true
+          - os: macos-latest
+            run_smoke_tests: false
 
     steps:
       - name: Checkout
@@ -147,6 +156,7 @@ jobs:
         run: bash -n install.sh
 
       - name: Installer smoke test (docker mode)
+        if: ${{ matrix.run_smoke_tests }}
         run: |
           ./install.sh \
             --mode docker \
@@ -159,11 +169,12 @@ jobs:
           curl -fsS http://127.0.0.1:13000 >/dev/null
 
       - name: Cleanup docker stack after docker mode
-        if: always()
+        if: ${{ always() && matrix.run_smoke_tests }}
         run: |
           docker compose -f compose.yml --env-file .env down -v --remove-orphans || true
 
       - name: Installer smoke test (local mode)
+        if: ${{ matrix.run_smoke_tests }}
         run: |
           ./install.sh \
             --mode local \
@@ -178,22 +189,11 @@ jobs:
           curl -fsS http://127.0.0.1:13001 >/dev/null
 
       - name: Cleanup local processes and docker resources
-        if: always()
+        if: ${{ always() && matrix.run_smoke_tests }}
         run: |
           if [ -f .install-logs/backend.pid ]; then kill "$(cat .install-logs/backend.pid)" || true; fi
           if [ -f .install-logs/frontend.pid ]; then kill "$(cat .install-logs/frontend.pid)" || true; fi
           docker compose -f compose.yml --env-file .env down -v --remove-orphans || true
-
-  installer-macos:
-    runs-on: macos-latest
-    needs: [check]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate installer shell syntax (macOS)
-        run: bash -n install.sh
 
   e2e:
     runs-on: ubuntu-latest
