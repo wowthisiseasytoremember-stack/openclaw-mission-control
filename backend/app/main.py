@@ -19,6 +19,7 @@ from app.api.board_group_memory import router as board_group_memory_router
 from app.api.board_groups import router as board_groups_router
 from app.api.board_memory import router as board_memory_router
 from app.api.board_onboarding import router as board_onboarding_router
+from app.api.board_outbound_webhooks import router as board_outbound_webhooks_router
 from app.api.board_webhooks import router as board_webhooks_router
 from app.api.boards import router as boards_router
 from app.api.gateway import router as gateway_router
@@ -107,6 +108,10 @@ OPENAPI_TAGS = [
         "description": "Board webhook registration, delivery config, and lifecycle endpoints.",
     },
     {
+        "name": "board-outbound-webhooks",
+        "description": "Outbound webhook registration and board event delivery configuration.",
+    },
+    {
         "name": "board-onboarding",
         "description": "Board onboarding state, setup actions, and onboarding workflow endpoints.",
     },
@@ -174,6 +179,7 @@ _OPENAPI_EXAMPLE_TAGS = {
     "boards",
     "board-memory",
     "board-webhooks",
+    "board-outbound-webhooks",
     "board-onboarding",
     "approvals",
     "tasks",
@@ -552,6 +558,7 @@ api_v1.include_router(board_group_memory_router)
 api_v1.include_router(boards_router)
 api_v1.include_router(board_memory_router)
 api_v1.include_router(board_webhooks_router)
+api_v1.include_router(board_outbound_webhooks_router)
 api_v1.include_router(board_onboarding_router)
 api_v1.include_router(approvals_router)
 api_v1.include_router(tasks_router)
