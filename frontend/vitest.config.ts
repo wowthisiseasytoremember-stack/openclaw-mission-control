@@ -21,6 +21,9 @@ export default defineConfig({
       include: [
         "src/lib/backoff.ts",
         "src/components/activity/ActivityFeed.tsx",
+        "src/components/skills/MarketplaceSkillsTable.tsx",
+        "src/components/skills/SkillInstallDialog.tsx",
+        "src/components/skills/SkillPacksTable.tsx",
       ],
       exclude: ["**/*.d.ts", "src/**/__generated__/**", "src/**/generated/**"],
       thresholds: {
