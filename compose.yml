@@ -11,6 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -21,6 +22,7 @@ services:
     image: redis:7-alpine
     ports:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -54,6 +56,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8000}:8000"
 
@@ -76,6 +79,7 @@ services:
       - backend
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
+    restart: unless-stopped
     develop:
       watch:
         # Rebuild frontend image when UI source or build config changes.
