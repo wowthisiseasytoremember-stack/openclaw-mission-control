@@ -16,6 +16,10 @@ const STATUS_STYLES: Record<
   offline: "outline",
   deleting: "danger",
   updating: "accent",
+  // device pairing statuses
+  pending: "warning",
+  approved: "success",
+  revoked: "danger",
 };
 
 export function StatusPill({ status }: { status: string }) {

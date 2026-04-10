@@ -173,11 +173,19 @@ export default function GatewayDetailPage() {
               Back to gateways
             </Button>
             {isAdmin && gatewayId ? (
-              <Button
-                onClick={() => router.push(`/gateways/${gatewayId}/edit`)}
-              >
-                Edit gateway
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/gateways/${gatewayId}/devices`)}
+                >
+                  Paired devices
+                </Button>
+                <Button
+                  onClick={() => router.push(`/gateways/${gatewayId}/edit`)}
+                >
+                  Edit gateway
+                </Button>
+              </>
             ) : null}
           </div>
         }
