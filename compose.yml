@@ -45,6 +45,10 @@ services:
       LOCAL_AUTH_TOKEN: ${LOCAL_AUTH_TOKEN}
       BASE_URL: ${BASE_URL:-http://localhost:8000}
       RQ_REDIS_URL: redis://redis:6379/0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - openclaw_identity:/home/appuser/.openclaw
     depends_on:
       db:
         condition: service_healthy
@@ -112,7 +116,12 @@ services:
       RQ_QUEUE_NAME: ${RQ_QUEUE_NAME:-default}
       RQ_DISPATCH_THROTTLE_SECONDS: ${RQ_DISPATCH_THROTTLE_SECONDS:-2.0}
       RQ_DISPATCH_MAX_RETRIES: ${RQ_DISPATCH_MAX_RETRIES:-3}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - openclaw_identity:/home/appuser/.openclaw
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  openclaw_identity:
