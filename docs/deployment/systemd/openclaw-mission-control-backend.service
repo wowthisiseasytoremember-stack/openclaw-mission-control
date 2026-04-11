@@ -15,7 +15,7 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory=REPO_ROOT/backend
 EnvironmentFile=-REPO_ROOT/backend/.env
-ExecStart=uv run uvicorn app.main:app --host 0.0.0.0 --port BACKEND_PORT
+ExecStart=uv run uvicorn app.main:app --host 127.0.0.1 --port BACKEND_PORT
 Restart=on-failure
 RestartSec=5
 

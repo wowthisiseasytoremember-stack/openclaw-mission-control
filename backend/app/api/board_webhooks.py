@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import time
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -208,6 +209,22 @@ def _verify_webhook_signature(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid webhook signature.",
         )
+
+    # Replay protection: reject payloads older than 300 seconds.
+    ts_header = request.headers.get("x-timestamp")
+    if ts_header is not None:
+        try:
+            ts = float(ts_header)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid X-Timestamp header.",
+            )
+        if abs(time.time() - ts) > 300:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Webhook timestamp is too old (replay protection).",
+            )
 
 
 _REDACTED_HEADERS = frozenset(

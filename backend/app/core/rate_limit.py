@@ -229,6 +229,12 @@ agent_auth_limiter: RateLimiter = create_rate_limiter(
     max_requests=20,
     window_seconds=60.0,
 )
+# Local auth: 20 attempts per 60 seconds per IP.
+local_auth_limiter: RateLimiter = create_rate_limiter(
+    namespace="local_auth",
+    max_requests=20,
+    window_seconds=60.0,
+)
 # Webhook ingest: 60 requests per 60 seconds per IP.
 webhook_ingest_limiter: RateLimiter = create_rate_limiter(
     namespace="webhook_ingest",

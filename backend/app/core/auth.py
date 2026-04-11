@@ -32,8 +32,10 @@ from pydantic import BaseModel, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from app.core.auth_mode import AuthMode
+from app.core.client_ip import get_client_ip
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.core.rate_limit import local_auth_limiter
 from app.db import crud
 from app.db.session import get_session
 from app.models.users import User
@@ -433,6 +435,9 @@ async def _resolve_local_auth_context(
     session: AsyncSession,
     required: bool,
 ) -> AuthContext | None:
+    client_ip = get_client_ip(request)
+    if not await local_auth_limiter.is_allowed(client_ip):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS)
     token = _extract_bearer_token(request.headers.get("Authorization"))
     if token is None:
         if required:

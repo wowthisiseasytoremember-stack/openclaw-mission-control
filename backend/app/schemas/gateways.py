@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from sqlmodel import Field, SQLModel
 
 RUNTIME_ANNOTATION_TYPES = (datetime, UUID)
@@ -66,8 +66,16 @@ class GatewayRead(GatewayBase):
     id: UUID
     organization_id: UUID
     token: str | None = None
+    has_token: bool = False
     created_at: datetime
     updated_at: datetime
+
+    @model_validator(mode="after")
+    def _redact_token(self) -> "GatewayRead":
+        """Replace raw token with a boolean presence flag before serialization."""
+        self.has_token = bool(self.token)
+        self.token = None
+        return self
 
 
 class GatewayTemplatesSyncError(SQLModel):
