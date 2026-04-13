@@ -1,182 +1,169 @@
-# OpenClaw Mission Control
+**Last Updated:** 2026-04-12 08:00 UTC
 
-[![CI](https://github.com/abhi1693/openclaw-mission-control/actions/workflows/ci.yml/badge.svg)](https://github.com/abhi1693/openclaw-mission-control/actions/workflows/ci.yml) ![Static Badge](https://img.shields.io/badge/Join-Slack-active?style=flat&color=blue&link=https%3A%2F%2Fjoin.slack.com%2Ft%2Foc-mission-control%2Fshared_invite%2Fzt-3qpcm57xh-AI9C~smc3MDBVzEhvwf7gg)
+# OpenClaw Mission Control — ichabod Instance
 
-OpenClaw Mission Control is the centralized operations and governance platform for running OpenClaw across teams and organizations, with unified visibility, approval controls, and gateway-aware orchestration.
-It gives operators a single interface for work orchestration, agent and gateway management, approval-driven governance, and API-backed automation.
+OpenClaw Mission Control is the centralized governance and operations platform for running OpenClaw (the AI agent orchestration system) across teams. It provides unified task boards, agent lifecycle management, approval flows, gateway management, and an audit trail — all through a single web UI and REST API.
 
-<img width="1896" height="869" alt="Mission Control dashboard" src="https://github.com/user-attachments/assets/49a3c823-6aaf-4c56-8328-fb1485ee940f" />
-<img width="1896" height="858" alt="image" src="https://github.com/user-attachments/assets/2bfee13a-3dab-4f4a-9135-e47bb6949dcf" />
-<img width="1890" height="865" alt="image" src="https://github.com/user-attachments/assets/84c2e867-5dc7-4a36-9290-e29179d2a659" />
-<img width="1912" height="881" alt="image" src="https://github.com/user-attachments/assets/3bbd825c-9969-4bbf-bf31-987f9168f370" />
-<img width="1902" height="878" alt="image" src="https://github.com/user-attachments/assets/eea09632-60e4-4d6d-9e6e-bdfa0ac97630" />
+This instance is self-hosted on `ichabod` (Ubuntu 22.04 homelab server).
 
-## Platform overview
+---
 
-Mission Control is designed to be the day-to-day operations surface for OpenClaw.
-Instead of splitting work across multiple tools, teams can plan, execute, review, and audit activity in one system.
+## Directory Structure
 
-Core operational areas:
-
-- Work orchestration: manage organizations, board groups, boards, tasks, and tags.
-- Agent operations: create, inspect, and manage agent lifecycle from a unified control surface.
-- Governance and approvals: route sensitive actions through explicit approval flows.
-- Gateway management: connect and operate gateway integrations for distributed environments.
-- Activity visibility: review a timeline of system actions for faster debugging and accountability.
-- API-first model: support both web workflows and automation clients from the same platform.
-
-## Use cases
-
-- Multi-team agent operations: run multiple boards and board groups across organizations from a single control plane.
-- Human-in-the-loop execution: require approvals before sensitive actions and keep decision trails attached to work.
-- Distributed runtime control: connect gateways and operate remote execution environments without changing operator workflow.
-- Audit and incident review: use activity history to reconstruct what happened, when it happened, and who initiated it.
-- API-backed process integration: connect internal workflows and automation clients to the same operational model used in the UI.
-
-## What makes Mission Control different
-
-- Operations-first design: built for running agent work reliably, not just creating tasks.
-- Governance built in: approvals, auth modes, and clear control boundaries are first-class.
-- Gateway-aware orchestration: built to operate both local and connected runtime environments.
-- Unified UI and API model: operators and automation act on the same objects and lifecycle.
-- Team-scale structure: organizations, board groups, boards, tasks, tags, and users in one system of record.
-
-## Who it is for
-
-- Platform teams running OpenClaw in self-hosted or internal environments.
-- Operations and engineering teams that need clear approval and auditability controls.
-- Organizations that want API-accessible operations without losing a usable web UI.
-
-## Get started in minutes
-
-### Option A: One-command production-style bootstrap
-
-If you haven't cloned the repo yet, you can run the installer in one line:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/abhi1693/openclaw-mission-control/master/install.sh | bash
+```
+openclaw-mission-control/
+├── backend/              Python (FastAPI) API server + database models
+│   ├── app/
+│   │   ├── api/          REST endpoints (tasks, agents, gateways, skills, etc.)
+│   │   ├── models/       SQLModel ORM models (PostgreSQL via asyncpg)
+│   │   ├── schemas/      Pydantic request/response schemas
+│   │   └── core/         Logging, config, version utilities
+│   ├── migrations/       Alembic database migration files
+│   ├── tests/            Pytest test suite
+│   └── pyproject.toml    Python dependencies (managed with uv)
+├── frontend/             Next.js web UI
+│   ├── src/app/          Next.js App Router pages
+│   └── src/components/   UI components including skills marketplace
+├── docs/                 Reference documentation
+│   ├── architecture/     System design and data model overviews
+│   ├── deployment/       Docker and production deployment guides
+│   ├── operations/       Day-to-day ops and runbooks
+│   └── troubleshooting/  Common issues and fixes
+├── scripts/              Operational scripts (this directory)
+│   ├── preflight.sh      Pre-flight health check — run before starting the stack
+│   ├── init-skill.sh     Scaffold a new skill directory with SKILL.md template
+│   └── check_markdown_links.py  CI link validator
+├── skills/               Symlinks to ~/.claude/skills/* — Claude Code skill library
+├── logs/                 Log output directory (gitignored)
+├── compose.yml           Docker Compose stack definition
+├── .env                  Active environment config (not committed)
+├── .env.example          Template — copy to .env to start
+├── CHANGELOG.md          Running history of changes to this deployment
+├── OPERATIONS_AUDIT.md   Operations audit findings and recommendations
+└── SECURITY_AUDIT.md     Security audit findings
 ```
 
-This clones the repository into `./openclaw-mission-control` if no local checkout is found in your current directory.
+---
 
-If you already cloned the repo:
+## How to Start
+
+### Pre-flight check first
 
 ```bash
-./install.sh
+/home/ichabod/openclaw-mission-control/scripts/preflight.sh
 ```
 
-The installer is interactive and will:
+This verifies the config file exists, permissions are correct (600), and detects whether the OpenClaw process is running.
 
-- Ask for deployment mode (`docker` or `local`).
-- Install missing system dependencies when possible.
-- Generate and configure environment files.
-- Bootstrap and start the selected deployment mode.
-
-Installer support matrix: [`docs/installer-support.md`](./docs/installer-support.md)
-
-### Option B: Manual setup
-
-### Prerequisites
-
-- **Supported platforms**: Linux and macOS. On macOS, Docker mode requires [Docker Desktop](https://www.docker.com/products/docker-desktop/); local mode requires [Homebrew](https://brew.sh) and Node.js 22+.
-- Docker Engine
-- Docker Compose v2 (`docker compose`)
-
-### 1. Configure environment
+### Start the full stack (Docker)
 
 ```bash
-cp .env.example .env
-```
-
-Before startup:
-
-- Set `LOCAL_AUTH_TOKEN` to a non-placeholder value (minimum 50 characters) when `AUTH_MODE=local`.
-- Ensure `BASE_URL` matches the public backend origin if you are not using `http://localhost:8000`.
-- `NEXT_PUBLIC_API_URL=auto` (default) resolves to `http(s)://<current-host>:8000`.
-  - Set an explicit URL when your API is behind a reverse proxy or non-default port.
-
-### 2. Start Mission Control
-
-```bash
+cd /home/ichabod/openclaw-mission-control
 docker compose -f compose.yml --env-file .env up -d --build
 ```
 
-If you are iterating on the UI in Docker and want automatic frontend rebuilds on
-source changes, run:
+### Stop the stack
 
 ```bash
-docker compose -f compose.yml --env-file .env up --build --watch
+cd /home/ichabod/openclaw-mission-control
+docker compose -f compose.yml --env-file .env down
 ```
 
-Notes:
-
-- Compose Watch requires Docker Compose **2.22.0+**.
-- You can also run watch separately after startup:
-
-```bash
-docker compose -f compose.yml --env-file .env up -d --build
-docker compose -f compose.yml --env-file .env watch
-```
-
-After pulling new changes, rebuild and recreate all services:
+### After pulling new changes
 
 ```bash
 docker compose -f compose.yml --env-file .env up -d --build --force-recreate
 ```
 
-For a fully clean rebuild (no cached build layers):
+---
+
+## Service URLs (ichabod)
+
+| Service | URL |
+|---------|-----|
+| Mission Control UI | http://192.168.1.200:3088 |
+| Backend API | http://192.168.1.200:8088 |
+| Backend health check | http://192.168.1.200:8088/healthz |
+| Tailscale | http://100.122.158.123:3088 |
+
+---
+
+## Key Config Files
+
+| File | Purpose |
+|------|---------|
+| `~/.openclaw/openclaw.json` | OpenClaw gateway config — agents, models, Telegram bot, gateway auth token. Permissions must be 600. |
+| `.env` | Docker stack environment — ports, database credentials, AUTH_MODE, LOCAL_AUTH_TOKEN, CORS origins. |
+| `.env.example` | Safe template showing all available variables. |
+
+### Token warning
+
+`~/.openclaw/openclaw.json` contains plaintext API keys for OpenRouter, Groq, and Gemini, plus the Telegram bot token and gateway auth token. This file has correct 600 permissions (owner-read only), but the keys are not referenced from environment variables — they are stored directly in the JSON. This is the current design; do not move them without testing that the openclaw process can read from env vars instead.
+
+---
+
+## Available Scripts
+
+### `scripts/preflight.sh`
+
+Checks that the deployment is ready before starting:
+- `openclaw.json` exists
+- `openclaw.json` has 600 permissions
+- An `openclaw` process is running
+
+### `scripts/init-skill.sh <skill-name>`
+
+Scaffolds a new Claude Code skill directory under `skills/`:
 
 ```bash
-docker compose -f compose.yml --env-file .env build --no-cache --pull
-docker compose -f compose.yml --env-file .env up -d --force-recreate
+./scripts/init-skill.sh my-new-skill
+# Creates: skills/my-new-skill/SKILL.md and skills/my-new-skill/references/
 ```
 
-### 3. Open the application
+---
 
-- Mission Control UI: http://localhost:3000
-- Backend health: http://localhost:8000/healthz
+## Skills
 
-### 4. Stop the stack
+The `skills/` directory contains symlinks pointing to `~/.claude/skills/`. These are Claude Code skills available to the agent running on this machine — not OpenClaw Mission Control skills per se. They cover operations across all projects on ichabod.
+
+To add a new skill scaffold:
 
 ```bash
-docker compose -f compose.yml --env-file .env down
+cd /home/ichabod/openclaw-mission-control
+./scripts/init-skill.sh <skill-name>
 ```
+
+---
+
+## Logs
+
+Runtime logs go to `logs/`. This directory is gitignored. If containers are running, follow logs with:
+
+```bash
+docker compose -f compose.yml --env-file .env logs -f backend
+docker compose -f compose.yml --env-file .env logs -f frontend
+```
+
+---
 
 ## Authentication
 
-Mission Control supports two authentication modes:
+This instance runs in `AUTH_MODE=local` — a shared bearer token set via `LOCAL_AUTH_TOKEN` in `.env`. Token must be at least 50 characters. Do not commit the `.env` file.
 
-- `local`: shared bearer token mode (default for self-hosted use)
-- `clerk`: Clerk JWT mode
+---
 
-Environment templates:
+## Python Backend (uv)
 
-- Root: [`.env.example`](./.env.example)
-- Backend: [`backend/.env.example`](./backend/.env.example)
-- Frontend: [`frontend/.env.example`](./frontend/.env.example)
+Dependencies are managed with `uv` (fast Python package manager) via `backend/pyproject.toml`. A `backend/uv.lock` lockfile is present. No separate `requirements.txt` is needed.
 
-## Documentation
+```bash
+cd backend
+uv sync          # install deps
+uv run pytest    # run tests
+```
 
-Complete guides for deployment, production, troubleshooting, and testing are in [`/docs`](./docs/).
+---
 
-## Project status
+## Hardcoded Versions — Known
 
-Mission Control is under active development.
-
-- Features and APIs may change between releases.
-- Validate and harden your configuration before production use.
-
-## Contributing
-
-Issues and pull requests are welcome.
-
-- [Contributing guide](./CONTRIBUTING.md)
-- [Open issues](https://github.com/abhi1693/openclaw-mission-control/issues)
-
-## License
-
-This project is licensed under the MIT License. See [`LICENSE`](./LICENSE).
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=abhi1693/openclaw-mission-control&type=date&legend=top-left)](https://www.star-history.com/#abhi1693/openclaw-mission-control&type=date&legend=top-left)
+`frontend/package.json` has `"version": "0.1.0"` — this is a standard npm package field, not a problem. Backend version is also `0.1.0` in `pyproject.toml`. These are intentional and track the upstream project version. The gateway version (`2026.4.9`) is tracked in `~/.openclaw/openclaw.json` under `meta.lastTouchedVersion`.
