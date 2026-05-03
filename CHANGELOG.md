@@ -1,9 +1,39 @@
-**Last Updated:** 2026-04-15 19:35 UTC
+**Last Updated:** 2026-05-03 23:20 UTC
 
 # Changelog
 
 All notable changes to OpenClaw Mission Control are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## 2026-05-03 23:20 UTC
+
+### Fixed
+- Switched primary model from Gemini 2.5 Flash (LiteLLM) to DeepSeek V4 Flash via OpenRouter — Gemini credits exhausted, all 7 cron jobs had 9+ consecutive failures
+- Removed hardcoded `gemini/gemini-2.5-flash` model from nightly-memory-consolidation cron job — now inherits default
+- Updated fallback chain: DeepSeek V4 Flash (primary) -> Llama 3.3 70B free -> Gemma 4 31B free -> Qwen 2.5 3B local
+- Resolved gateway port conflict causing systemd "failed" state after restart
+
+### Changed
+- Enabled 30m heartbeat on main and job-agent (previously only mc-gateway had heartbeat)
+- Switched rate limiter backend from in-memory to Redis (shared across backend + webhook-worker containers)
+
+### Investigated
+- Memory plugin: main workspace healthy, job-agent and mc-gateway have dirty memory dirs (non-blocking)
+- Node service: confirmed optional, not required for current installation
+- Security audit H-2 (local auth rate limiting) and H-3 (gateway token redaction): already implemented in commit 22c57c3
+
+**For Produce:** OpenClaw hardening session — model switch to DeepSeek V4 Flash, cron jobs unblocked, heartbeats enabled, Redis rate limiter activated. Security H-2/H-3 already shipped.
+
+---
+
+## 2026-04-25 00:00 UTC
+
+### Changed
+- Upgraded OpenClaw gateway from v2026.4.9 to v2026.4.23 (14 minor versions)
+- Bumped GATEWAY_MIN_VERSION from 2026.02.9 to 2026.4.9 in backend config
+- Systemd service description and version env var auto-updated by gateway updater
 
 ---
 
