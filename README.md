@@ -1,4 +1,4 @@
-**Last Updated:** 2026-04-15 19:35 UTC
+**Last Updated:** 2026-05-04 08:00 UTC
 
 # OpenClaw Mission Control — ichabod Instance
 
@@ -167,3 +167,9 @@ uv run pytest    # run tests
 ## Hardcoded Versions — Known
 
 `frontend/package.json` has `"version": "0.1.0"` — this is a standard npm package field, not a problem. Backend version is also `0.1.0` in `pyproject.toml`. These are intentional and track the upstream project version. The gateway version (`2026.4.9`) is tracked in `~/.openclaw/openclaw.json` under `meta.lastTouchedVersion`.
+
+---
+
+## Backlogs
+
+- [SPRINT_BACKLOG.md](SPRINT_BACKLOG.md) — Frontend sprint: 7 deferred ship-blockers from 2026-05-04 audit (B-02, B-03, B-04, B-05, P-01, P-02, P-03)

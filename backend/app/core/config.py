@@ -100,9 +100,13 @@ class Settings(BaseSettings):
                 )
         elif self.auth_mode == AuthMode.LOCAL:
             token = self.local_auth_token.strip()
+            if not token:
+                raise ValueError(
+                    "LOCAL_AUTH_TOKEN is required and cannot be blank. "
+                    "Set it in your .env file before starting OpenClaw.",
+                )
             if (
-                not token
-                or len(token) < LOCAL_AUTH_TOKEN_MIN_LENGTH
+                len(token) < LOCAL_AUTH_TOKEN_MIN_LENGTH
                 or token.lower() in LOCAL_AUTH_TOKEN_PLACEHOLDERS
             ):
                 raise ValueError(

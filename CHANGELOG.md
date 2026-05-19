@@ -1,41 +1,101 @@
-**Last Updated:** 2026-05-03 23:20 UTC
+**Last Updated:** 2026-05-04 08:30 UTC
 
 # Changelog
-
-All notable changes to OpenClaw Mission Control are documented here.  
+All notable changes to OpenClaw Mission Control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+---
+## 2026-05-04 08:30 UTC — Sprint backlog written; Haiku audit confirmed Ollama already last in fallback chain
+- `SPRINT_BACKLOG.md` created with 7 deferred ship-blockers (B-02 through P-03); README.md updated with pointer
+- Ollama confirmed already last in fallback chain — no reordering needed
+- DeepSeek via OpenRouter is the primary direction; Ollama kept as last-resort only
 
 ---
+## 2026-05-04 08:00 UTC — B-01: Fail fast on blank LOCAL_AUTH_TOKEN
+### Fixed
+- `LOCAL_AUTH_TOKEN` blank-string check now raises a distinct, human-readable `ValueError` before the length/placeholder check fires. Error message: "LOCAL_AUTH_TOKEN is required and cannot be blank. Set it in your .env file before starting OpenClaw."
+- `.env.example` updated: blank default replaced with `your-secret-token-here` placeholder; comment now marks it REQUIRED with a one-liner to generate a valid token.
 
+**For Produce:** B-01 fixed — OpenClaw backend now fails fast with a clear error instead of silently crashing when LOCAL_AUTH_TOKEN is blank.
+---
+## 2026-05-04 07:30 UTC — Recovery: service file fix + config sync
+### Fixed
+- **CRITICAL:** Removed invalid `--dangerously-force-unsafe-install` flag from user-level systemd ExecStart — flag is for `openclaw plugins install`, not `openclaw gateway`, and would crash the gateway on next restart
+- Masked dead system-level unit at `/etc/systemd/system/openclaw-gateway.service` (was exiting code 78, causing noise)
+### Changed
+- LiteLLM model aliases in openclaw.json synced to match Gemini's new LiteLLM gateway config: smart-tools, coding, planning, chat, utility, vision, research (replaced old aliases: tools, chat, think, coder, research, worker)
+- `hooks.allowedAgentIds` set to `["hooks", "main"]`
+### Not Fixed
+- Ollama provider timeout (121s timeouts in logs) — OpenClaw schema rejects both `providerConfigs.ollama.timeoutMs` and `models.providers.ollama.requestTimeoutMs`. Needs env var approach or upstream feature request. Fallback chain (ollama -> litellm/coding) mitigates.
+
+**For Produce:** OpenClaw gateway service file defused (invalid flag removed), LiteLLM aliases synced to Gemini's new config, system-level unit masked. Ollama timeout still unresolved — schema limitation.
+---
+## 2026-05-04 12:00 UTC
+### Changed
+- Primary model switched to `litellm/smart-tools` (DeepSeek V4 Flash via LiteLLM proxy)
+- Fallback chain updated: `litellm/coding` (DeepSeek V4 Flash) → `litellm/chat` (Gemini 2.0 Flash) → `ollama/qwen2.5:3b` (local)
+- `allowedAgentIds` hardened from wildcard `"*"` to explicit list `["hooks", "main"]` — limits which agent identifiers can connect to the gateway
+- `--dangerously-force-unsafe-install` flag added to openclaw-gateway systemd service definition (required for kimi-claw compatibility) — **NOTE: this was incorrect and was removed in the 07:30 UTC session above**
+
+**For Produce:** OpenClaw primary model is now litellm/smart-tools (DeepSeek V4 Flash). Fallback chain updated. allowedAgentIds locked to hooks + main only. Systemd service updated for kimi-claw.
+---
 ## 2026-05-03 23:20 UTC
-
 ### Fixed
 - Switched primary model from Gemini 2.5 Flash (LiteLLM) to DeepSeek V4 Flash via OpenRouter — Gemini credits exhausted, all 7 cron jobs had 9+ consecutive failures
 - Removed hardcoded `gemini/gemini-2.5-flash` model from nightly-memory-consolidation cron job — now inherits default
 - Updated fallback chain: DeepSeek V4 Flash (primary) -> Llama 3.3 70B free -> Gemma 4 31B free -> Qwen 2.5 3B local
 - Resolved gateway port conflict causing systemd "failed" state after restart
-
 ### Changed
 - Enabled 30m heartbeat on main and job-agent (previously only mc-gateway had heartbeat)
 - Switched rate limiter backend from in-memory to Redis (shared across backend + webhook-worker containers)
-
 ### Investigated
 - Memory plugin: main workspace healthy, job-agent and mc-gateway have dirty memory dirs (non-blocking)
 - Node service: confirmed optional, not required for current installation
 - Security audit H-2 (local auth rate limiting) and H-3 (gateway token redaction): already implemented in commit 22c57c3
-
 **For Produce:** OpenClaw hardening session — model switch to DeepSeek V4 Flash, cron jobs unblocked, heartbeats enabled, Redis rate limiter activated. Security H-2/H-3 already shipped.
-
 ---
-
 ## 2026-04-25 00:00 UTC
-
 ### Changed
 - Upgraded OpenClaw gateway from v2026.4.9 to v2026.4.23 (14 minor versions)
 - Bumped GATEWAY_MIN_VERSION from 2026.02.9 to 2026.4.9 in backend config
 - Systemd service description and version env var auto-updated by gateway updater
-
 ---
+
+## [2026-05-03 23:18 UTC] — Switched primary LLM to DeepSeek V4 Flash and implemented agent heartbeats
+
+### Done
+- Switched primary model to DeepSeek V4 Flash via OpenRouter
+- Implemented LLM fallback chain: DeepSeek -> Llama 3.3 -> Gemma 4 -> Qwen 2.5
+- Fixed nightly-memory-consolidation job by removing hardcoded Gemini references
+- Enabled agent heartbeats for main, job-agent, and mc-gateway
+- Migrated rate limiter to a shared Redis instance across containers
+
+### In Progress
+- Nothing
+
+### For Produce
+> Address the 9 registered P2 items including session TTL cleanup and webhook secret hashing.
+
+## [2026-05-03 23:17 UTC] — Updated configuration and restarted services for ntfy bridge and gateway
+
+### Done
+- Nothing
+
+### In Progress
+- Wrote bridge.py for ntfy-bridge stack
+- Edited docker-compose.yml for ntfy productivity stack
+- Edited openclaw.json configuration file
+- Validated JSON syntax of openclaw.json
+- Restarted openclaw-gateway.service and confirmed active
+- Edited .env file in Projects/openclaw
+- Updated ntfy-server.yml and docker-compose.yml again
+- Ran cron job 96e96aa9-c781-4ab2-9b69-dbb2c1dc12ed
+- Ran cron job 96e96aa9-c781-4bda-9091-a4fcfb68ec87
+- Listed node status via openclaw node status --json
+- Extracted job IDs from jobs.json
+- Searched for 'GatewayRead' in backend Python files
+
+### For Produce
+> Verify that openclaw-gateway service stays active and review cron job outputs for any errors.
 
 ## [Unreleased]
 

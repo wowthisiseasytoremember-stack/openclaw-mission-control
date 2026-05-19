@@ -96,6 +96,21 @@ async def process_lifecycle_queue_task(task: QueuedTask) -> None:
                     "max_attempts": MAX_WAKE_ATTEMPTS_WITHOUT_CHECKIN,
                 },
             )
+            try:
+                _name = agent.name if hasattr(agent, "name") else str(agent.id)
+                _summary = f"Agent {_name} went offline after {agent.wake_attempts} failed wakeups."
+                _proc = await asyncio.create_subprocess_exec(
+                    "/home/ichabod/bin/write-close-entry.sh",
+                    "--source", "openclaw/ichabod",
+                    "--project", "openclaw",
+                    "--summary", _summary,
+                    "--auto",
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.DEVNULL,
+                )
+                await asyncio.wait_for(_proc.communicate(), timeout=3)
+            except Exception:
+                pass
             return
 
         gateway = await Gateway.objects.by_id(agent.gateway_id).first(session)
