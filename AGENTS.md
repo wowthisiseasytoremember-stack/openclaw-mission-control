@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `backend/`: FastAPI service. Main app code lives in `backend/app/` with API routes in `backend/app/api/`, data models in `backend/app/models/`, schemas in `backend/app/schemas/`, and service logic in `backend/app/services/`.
+- `backend/`: FastAPI service. Main app code lives in `backend/app/` with API routes in `backend/app/api/`, data models in `backend/app/models/`, schemas in `backend/app/schemas/`, service logic in `backend/app/services/` (core OpenClaw gateway RPC and provisioning in `backend/app/services/openclaw/`), and DB utilities in `backend/app/db/`.
 - `backend/migrations/`: Alembic migrations (`backend/migrations/versions/` for generated revisions).
 - `backend/tests/`: pytest suite (`test_*.py` naming).
 - `backend/templates/`: backend-shipped templates used by gateway flows.
