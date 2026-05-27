@@ -1,0 +1,7 @@
+{
+  "enabledMcpjsonServers": [
+    "google-workspace",
+    "better-email",
+    "jobspy"
+  ]
+}
